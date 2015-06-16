@@ -14,6 +14,7 @@ import (
 
 	"github.com/docker/docker/cliconfig"
 	"github.com/docker/docker/pkg/homedir"
+	"github.com/docker/docker/pkg/kerberos"
 	flag "github.com/docker/docker/pkg/mflag"
 	"github.com/docker/docker/pkg/term"
 	"github.com/docker/docker/utils"
@@ -52,6 +53,8 @@ type DockerCli struct {
 	isTerminalOut bool
 	// transport holds the client transport instance.
 	transport *http.Transport
+	// Kerberos options
+	kerbOptions *kerberos.Options
 }
 
 var funcMap = template.FuncMap{
@@ -182,7 +185,7 @@ func (cli *DockerCli) CheckTtyInput(attachStdin, ttyMode bool) error {
 // The key file, protocol (i.e. unix) and address are passed in as strings, along with the tls.Config. If the tls.Config
 // is set the client scheme will be set to https.
 // The client will be given a 32-second timeout (see https://github.com/docker/docker/pull/8035).
-func NewDockerCli(in io.ReadCloser, out, err io.Writer, keyFile string, proto, addr string, tlsConfig *tls.Config) *DockerCli {
+func NewDockerCli(in io.ReadCloser, out, err io.Writer, keyFile string, proto, addr string, tlsConfig *tls.Config, kerbOptions *kerberos.Options) *DockerCli {
 	var (
 		inFd          uintptr
 		outFd         uintptr
@@ -232,5 +235,6 @@ func NewDockerCli(in io.ReadCloser, out, err io.Writer, keyFile string, proto, a
 		tlsConfig:     tlsConfig,
 		scheme:        scheme,
 		transport:     tr,
+		kerbOptions:   kerbOptions,
 	}
 }

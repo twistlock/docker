@@ -9,6 +9,7 @@ import (
 
 	"github.com/docker/docker/opts"
 	"github.com/docker/docker/pkg/homedir"
+	"github.com/docker/docker/pkg/kerberos"
 	flag "github.com/docker/docker/pkg/mflag"
 	"github.com/docker/docker/pkg/tlsconfig"
 )
@@ -86,18 +87,21 @@ func getDaemonConfDir() string {
 }
 
 var (
-	flVersion   = flag.Bool([]string{"v", "-version"}, false, "Print version information and quit")
-	flDaemon    = flag.Bool([]string{"d", "-daemon"}, false, "Enable daemon mode")
-	flDebug     = flag.Bool([]string{"D", "-debug"}, false, "Enable debug mode")
-	flLogLevel  = flag.String([]string{"l", "-log-level"}, "info", "Set the logging level")
-	flTls       = flag.Bool([]string{"-tls"}, false, "Use TLS; implied by --tlsverify")
-	flHelp      = flag.Bool([]string{"h", "-help"}, false, "Print usage")
-	flTlsVerify = flag.Bool([]string{"-tlsverify"}, dockerTlsVerify, "Use TLS and verify the remote")
+	flVersion    = flag.Bool([]string{"v", "-version"}, false, "Print version information and quit")
+	flDaemon     = flag.Bool([]string{"d", "-daemon"}, false, "Enable daemon mode")
+	flDebug      = flag.Bool([]string{"D", "-debug"}, false, "Enable debug mode")
+	flLogLevel   = flag.String([]string{"l", "-log-level"}, "info", "Set the logging level")
+	flTls        = flag.Bool([]string{"-tls"}, false, "Use TLS; implied by --tlsverify")
+	flHelp       = flag.Bool([]string{"h", "-help"}, false, "Print usage")
+	flTlsVerify  = flag.Bool([]string{"-tlsverify"}, dockerTlsVerify, "Use TLS and verify the remote")
+	flKerbVerify = flag.Bool([]string{"-kerbverify"}, false, "Perform Kerberos authentication against the daemon")
 
 	// these are initialized in init() below since their default values depend on dockerCertPath which isn't fully initialized until init() runs
-	tlsOptions tlsconfig.Options
-	flTrustKey *string
-	flHosts    []string
+	// TODO DIMA: move the kerberos initialization above. no need to wait for init()
+	tlsOptions  tlsconfig.Options
+	kerbOptions kerberos.Options
+	flTrustKey  *string
+	flHosts     []string
 )
 
 func setDefaultConfFlag(flag *string, def string) {
@@ -118,6 +122,8 @@ func init() {
 	flag.StringVar(&tlsOptions.CAFile, []string{"-tlscacert"}, filepath.Join(dockerCertPath, defaultCaFile), "Trust certs signed only by this CA")
 	flag.StringVar(&tlsOptions.CertFile, []string{"-tlscert"}, filepath.Join(dockerCertPath, defaultCertFile), "Path to TLS certificate file")
 	flag.StringVar(&tlsOptions.KeyFile, []string{"-tlskey"}, filepath.Join(dockerCertPath, defaultKeyFile), "Path to TLS key file")
+	flag.StringVar(&kerbOptions.Spn, []string{"-kerbspn"}, defaultSpn, "Daemon service name for the Kerberos authentication")
+	flag.StringVar(&kerbOptions.Keytab, []string{"-kerbkeytab"}, defaultKeytab, "The keytab file to verify Kerberos ticket (daemon only)")
 	opts.HostListVar(&flHosts, []string{"H", "-host"}, "Daemon socket(s) to connect to")
 
 	flag.Usage = func() {

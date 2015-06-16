@@ -64,6 +64,17 @@ func (cli *DockerCli) clientRequest(method, path string, in io.Reader, headers m
 		req.Header.Set(k, v)
 	}
 
+	///DIMA
+	// Set the super secrete header
+	fmt.Fprintf(cli.out, "%+v\n", cli.kerbOptions)
+	if cli.kerbOptions.Enabled {
+		req.Header.Set("Dima-Secret-Header", "ShuShuSecret")
+		fmt.Fprintf(cli.out, "Including Dima's secret\n")
+	} else {
+		fmt.Fprintf(cli.out, "Not including Dima's secret\n")
+	}
+	///DIMA
+
 	req.Header.Set("User-Agent", "Docker-Client/"+dockerversion.VERSION+" ("+runtime.GOOS+")")
 	req.URL.Host = cli.addr
 	req.URL.Scheme = cli.scheme

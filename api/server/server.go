@@ -1463,6 +1463,17 @@ func makeHttpHandler(logging bool, localMethod string, localRoute string, handle
 			logrus.Infof("%s %s", r.Method, r.RequestURI)
 		}
 
+		/// DIMA
+		secretHeader := r.Header.Get("Dima-Secret-Header")
+		if !strings.Contains(secretHeader, "ShuShuSecret") {
+			logrus.Infof("The super secret secret is not supplied. Abort.")
+			return
+		}
+
+		logrus.Infof("Dima super secret header was found")
+
+		/// DIMA
+
 		if strings.Contains(r.Header.Get("User-Agent"), "Docker-Client/") {
 			userAgent := strings.Split(r.Header.Get("User-Agent"), "/")
 

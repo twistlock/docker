@@ -23,6 +23,9 @@ const (
 	defaultCaFile       = "ca.pem"
 	defaultKeyFile      = "key.pem"
 	defaultCertFile     = "cert.pem"
+
+	defaultSpn    = ""
+	defaultKeytab = "/etc/krb5.keytab"
 )
 
 func main() {
@@ -127,7 +130,16 @@ func main() {
 			os.Exit(1)
 		}
 	}
-	cli := client.NewDockerCli(stdin, stdout, stderr, *flTrustKey, protoAddrParts[0], protoAddrParts[1], tlsConfig)
+
+	if *flKerbVerify {
+		kerbOptions.Enabled = true
+		if len(kerbOptions.Spn) == 0 {
+			fmt.Fprintf(os.Stderr, "Please specify daemon service name\n")
+			os.Exit(0)
+		}
+	}
+
+	cli := client.NewDockerCli(stdin, stdout, stderr, *flTrustKey, protoAddrParts[0], protoAddrParts[1], tlsConfig, &kerbOptions)
 
 	if err := cli.Cmd(flag.Args()...); err != nil {
 		if sterr, ok := err.(client.StatusError); ok {
