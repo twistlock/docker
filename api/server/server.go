@@ -28,6 +28,7 @@ type Config struct {
 	Logging     bool
 	EnableCors  bool
 	CorsHeaders string
+	AuthZPluginNames []string
 	Version     string
 	SocketGroup string
 	TLSConfig   *tls.Config
